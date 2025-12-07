@@ -804,7 +804,7 @@ local v206 = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/relea
     Transparent = true,
     Theme = "Dark",
     Resizable = true,
-    SideBarWidth = 200,
+    SideBarWidth = 100,
     BackgroundImageTransparency = 0.42,
     HideSearchBar = false,
     ScrollBarEnabled = false,
@@ -851,7 +851,7 @@ local function vu217()
         if v215 == nil then
             break
         end
-        if v216:IsA("TextLabel") and string.find(v216.Text, "เงินในธนาคาร") then
+        if v216:IsA("TextLabel") and string.find(v216.Text, "Bank Balance") then
             return tonumber(v216.Text:match("%$(%d+)"))
         end
     end
