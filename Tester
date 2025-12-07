@@ -1,0 +1,1170 @@
+local Net = require(game:GetService('ReplicatedStorage').Modules.Core.Net)
+
+pcall(function()
+    local func = getupvalue(Net.get, 2)
+       setconstant(func, 1, "Hello")
+       setconstant(func, 3, "Hello")
+       setconstant(func, 4, "Hello")
+  end)
+
+local v4 = game:GetService("ReplicatedStorage")
+local vu5 = game:GetService("PathfindingService")
+local v6 = game:GetService("Players")
+game:GetService("RunService")
+local vu7 = require(v4.Modules.Core.Net)
+require(v4.Modules.Game.Sprint)
+local vu8 = v6.LocalPlayer
+local vu9 = vu8.Character or vu8.CharacterAdded:Wait()
+local vu10 = vu8.PlayerGui
+local v11 = vu9
+local vu12 = vu9.WaitForChild(v11, "Humanoid")
+local v13 = vu9
+local vu14 = vu9.WaitForChild(v13, "HumanoidRootPart")
+local vu15 = vu8.UserId
+vu8.CharacterAdded:Connect(function(p16)
+    vu9 = p16
+    vu12 = vu9:WaitForChild("Humanoid")
+    vu14 = vu9:WaitForChild("HumanoidRootPart")
+end)
+local vu17 = {
+    HackToolBasic = 10,
+    HackToolPro = 150,
+    HackToolUltimate = 350,
+    HackToolQuantum = 550
+}
+local vu18 = {
+    [1] = "HackToolBasic",
+    [12] = "HackToolPro",
+    [50] = "HackToolUltimate",
+    [90] = "HackToolQuantum"
+}
+local vu19 = {
+    AutoFarmATM = false,
+    EnabledVechine = false,
+    EnabledDespoit = false,
+    SelectSwiperType = "Smart Select",
+    SwiperLimit = 3,
+    VechineType = "car",
+    InstantTeleportSpeed = 35,
+    InstantVechineSpeed = 55,
+    StopWalking = false,
+    Running = false,
+    keys = {},
+    PathfindingModifierCreater = false,
+    EnabledATMViewer = false,
+    LastVehicleTeleport = 0,
+    AntiDied = false
+}
+local vu20 = false
+local function vu21()
+    return vu19
+end
+local vu22 = {}
+local vu23 = {}
+if not vu21().PathfindingModifierCreater then
+    local v24, v25, v26 = pairs(workspace:GetDescendants())
+    while true do
+        local v27
+        v26, v27 = v24(v25, v26)
+        if v26 == nil then
+            break
+        end
+        if v27.Name == "DoorSystem" or v27.Name == "BasementDoor" then
+            local v28, v29, v30 = ipairs(v27:GetDescendants())
+            while true do
+                local v31, v32 = v28(v29, v30)
+                if v31 == nil then
+                    break
+                end
+                v30 = v31
+                if v32:IsA("BasePart") then
+                    v32.CanCollide = false
+                    if not v32:FindFirstChildOfClass("PathfindingModifier") then
+                        local v33 = Instance.new("PathfindingModifier")
+                        v33.Label = "DoorArea"
+                        v33.PassThrough = true
+                        v33.Parent = v32
+                    end
+                end
+            end
+        end
+        if v27.Name == "VehicleBlockers" then
+            v27:Destroy()
+        end
+    end
+    local v34 = workspace:FindFirstChild("ShopZone_IllegalNightclub")
+    if v34 then
+        v34:PivotTo(CFrame.new(1167.5, 255.1586151123047, - 355.3337097167969) * CFrame.new(0, 0, 0))
+    end
+    vu21().PathfindingModifierCreater = true
+end
+function vu22.dist(_, p35)
+    return (p35.Position - vu14.Position).Magnitude or 0
+end
+function vu22.GetInfo(_, p36)
+    local v37 = vu10.Items:FindFirstChild("ItemsHolder").ItemsScrollingFrame
+    local v38, v39, v40 = pairs(v37:GetChildren())
+    local v41 = 0
+    local v42 = false
+    local v43 = nil
+    local v44 = false
+    local v45 = false
+    while true do
+        local v46
+        v40, v46 = v38(v39, v40)
+        if v40 == nil then
+            break
+        end
+        if v46.Name ~= "Folder" and (v46.Name ~= "UIGridLayout" and (v46.Name ~= "ItemTemplate" and v46.ItemName.Text == p36)) then
+            v43 = v46.Name
+            v41 = v41 + 1
+            v44 = v46:FindFirstChild("ItemEquipped").Visible
+            v45 = v46:FindFirstChild("DestroyedItemIcon").Visible
+            v42 = true
+        end
+    end
+    return {
+        v41,
+        v42,
+        v43,
+        v44,
+        v45
+    }
+end
+function vu22.GetSkill(_, p47)
+    local v48 = vu10:FindFirstChild("Skills")
+    if not v48 then
+        return 0
+    end
+    local v49 = v48:FindFirstChild("SkillsHolder").SkillsScrollingFrame
+    local v50, v51, v52 = pairs(v49:GetChildren())
+    while true do
+        local v53
+        v52, v53 = v50(v51, v52)
+        if v52 == nil then
+            break
+        end
+        if v53.Name == "SkillOptionTemplate" and string.find(v53:FindFirstChild("SkillTitle").Text, p47) then
+            return tonumber(v53:FindFirstChild("SkillTitle").Text:match("%d+"))
+        end
+    end
+    return 0
+end
+function vu22.CheckingIsMinigame(_)
+    return vu10.SliderMinigame:FindFirstChildOfClass("Frame").Visible
+end
+function vu22.GetLevel(_)
+    local v54 = vu8:WaitForChild("PlayerGui"):FindFirstChild("Skills")
+    if not v54 then
+        return 1
+    end
+    local v55 = v54:FindFirstChild("SkillsHolder")
+    if not v55 then
+        return 1
+    end
+    local v56 = v55:FindFirstChild("SkillsScrollingFrame")
+    if not v56 then
+        return 1
+    end
+    local v57 = v56:FindFirstChild("PlayerCard")
+    if not v57 then
+        return 1
+    end
+    local v58 = v57:FindFirstChild("SkillPlayerViewport")
+    if not v58 then
+        return 1
+    end
+    local v59 = v58:FindFirstChild("Frame")
+    if not v59 then
+        return 1
+    end
+    local v60 = v59:FindFirstChild("ViewportSkillLevelCard")
+    if not v60 then
+        return 1
+    end
+    local v61 = v60:FindFirstChild("TextLabel")
+    if not v61 then
+        return 1
+    end
+    local v62 = v61.Text
+    return tonumber(v62:match("%d+")) or 1
+end
+function vu22.GetStock(_)
+    local v63 = game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild("ConsumableBuy")
+    if not v63 then
+        return "N/A"
+    end
+    local v64 = v63:FindFirstChild("ConsumableOptionsHolder")
+    if not v64 then
+        return "N/A"
+    end
+    local v65 = v64:FindFirstChild("ConsumableOptionsScrollingFrame")
+    if not v65 then
+        return "N/A"
+    end
+    local v66 = v65:FindFirstChild("ConsumableBuyThing")
+    if not v66 then
+        return "N/A"
+    end
+    local v67 = v66:FindFirstChild("Item")
+    if not v67 then
+        return "N/A"
+    end
+    local v68 = v67:FindFirstChild("Options")
+    if not v68 then
+        return "N/A"
+    end
+    local v69 = v68:FindFirstChild("StockLeft")
+    return v69 and (v69.Text or "N/A") or "N/A"
+end
+function vu22.Detect(_)
+    local v70, v71, v72 = ipairs(vu10.Notifications.Frame:GetChildren())
+    while true do
+        local v73
+        v72, v73 = v70(v71, v72)
+        if v72 == nil then
+            break
+        end
+        if v73.Name == "Notification" and v73.Text == "Teleport detected" then
+            return true
+        end
+    end
+    return nil
+end
+function vu22.GetChipPrice(_, p74)
+    return vu17[p74] or nil
+end
+function vu22.ForceStop(_)
+    if vu21().Running then
+        vu21().StopWalking = true
+        task.wait()
+        if vu21().StopWalking then
+            task.wait()
+            vu21().StopWalking = false
+        end
+    end
+end
+function vu22.GetMoney(_)
+    return tonumber(vu10.TopRightHud.Holder.Frame.MoneyTextLabel.Text:match("%$(%d+)"))
+end
+function vu22.ATMMoney(_)
+    local v75 = vu10
+    local v76, v77, v78 = ipairs(v75:GetDescendants())
+    while true do
+        local v79
+        v78, v79 = v76(v77, v78)
+        if v78 == nil then
+            break
+        end
+        if v79:IsA("TextLabel") and string.find(v79.Text, "Bank Balance") then
+            return tonumber(v79.Text:match("%$(%d+)"))
+        end
+    end
+    return 0
+end
+function vu22.GetCarFromType(_, p80)
+    local v81 = vu10.Items.ItemsHolder.ItemsScrollingFrame
+    if p80 == "bike" then
+        local v82, v83, v84 = ipairs(v81:GetChildren())
+        while true do
+            local v85
+            v84, v85 = v82(v83, v84)
+            if v84 == nil then
+                break
+            end
+            if v85:GetAttribute("ItemType") == "bike" then
+                return v85.ItemName.Text == "BMX" and "BMX" or v85.ItemName.Text
+            end
+        end
+    else
+        local v86, v87, v88 = ipairs(v81:GetChildren())
+        while true do
+            local v89
+            v88, v89 = v86(v87, v88)
+            if v88 == nil then
+                break
+            end
+            if v89:GetAttribute("ItemType") == "car" then
+                return v89.ItemName.Text
+            end
+        end
+    end
+    return nil
+end
+function vu22.GetChipFromType(_, p90)
+    local v91 = nil
+    if vu22:GetLevel() < 10 then
+        v91 = "Level"
+    elseif tostring(p90) ~= "Smart Select" then
+        local v92, v93, v94 = pairs(vu18)
+        while true do
+            local v95
+            v94, v95 = v92(v93, v94)
+            if v94 == nil then
+                break
+            end
+            if tostring(v95) == tostring(p90) then
+                v91 = v95
+            end
+        end
+    else
+        local v96 = vu22:GetSkill("Swiper")
+        local v97, v98, v99 = pairs(vu18)
+        while true do
+            local v100
+            v99, v100 = v97(v98, v99)
+            if v99 == nil then
+                break
+            end
+            if v99 <= v96 then
+                v91 = v100
+            end
+        end
+    end
+    return v91 or "HackToolBasic"
+end
+function vu22.Ac(_, ...)
+    return vu7.send(...)
+end
+local function vu102(p101)
+    if p101 == nil then
+        return vu21().AutoFarmATM
+    else
+        return p101
+    end
+end
+function vu22.Teleport(p103, pu104, p105, p106)
+    if not pu104 then
+        warn("Teleport destination is nil")
+        vu21().Running = false
+        return
+    end
+    vu21().StopWalking = false
+    vu21().Running = true
+    local v107 = vu8.Character or vu8.CharacterAdded:Wait()
+    local vu108 = v107:WaitForChild("HumanoidRootPart")
+    local v109 = v107:WaitForChild("Humanoid")
+    local vu110 = vu5:CreatePath({
+        AgentCanJump = true,
+        AgentJumpHeight = 2.5,
+        AgentHeight = 4.5,
+        AgentRadius = 2.5,
+        AgentMaxSlope = 90,
+        Costs = {
+            BlockedNode = 50,
+            DoorArea = 1
+        }
+    })
+    if not pcall(function()
+        vu110:ComputeAsync(vu108.Position, pu104)
+    end) then
+        vu21().Running = false
+        return
+    end
+    if vu110.Status == Enum.PathStatus.Success then
+        local v111 = vu110
+        local v112 = vu110.GetWaypoints(v111)
+        local v113, v114, v115 = pairs(v112)
+        local v116 = vu108
+        while true do
+            local v117
+            v115, v117 = v113(v114, v115)
+            if v115 == nil then
+                break
+            end
+            local v118 = v117.Action == Enum.PathWaypointAction.Jump and 10 or 4
+            local v119 = v117.Position + Vector3.new(0, v118, 0)
+            local v120 = v116.Position
+            local v121 = (v119 - v120).Unit
+            local v122 = (v119 - v120).Magnitude
+            local v123 = vu21().InstantTeleportSpeed or 30
+            local v124 = tick()
+            local v125 = 0
+            while v125 < v122 and (not vu21().StopWalking and vu102(p105)) do
+                task.wait()
+                vu21().Running = true
+                if vu21().StopWalking or (not vu102(p105) or v109.Health <= 0) then
+                    vu21().Running = false
+                    break
+                end
+                if p103:Detect() then
+                    vu21().Running = false
+                    return p103:Teleport(pu104, p105, p106)
+                end
+                if p106 and p106:GetAttribute(vu21().keys[3]) then
+                    vu21().Running = false
+                    break
+                end
+                if p106 and p103:CheckingIsMinigame() then
+                    vu21().Running = false
+                    return p103:Teleport(pu104, p105, p106)
+                end
+                local v126 = tick() - v124
+                v125 = math.min(v126 * v123, v122)
+                local v127 = v120 + v121 * v125
+                if v109.Sit then
+                    v109.Sit = false
+                end
+                v116:PivotTo(CFrame.new(v127))
+                vu22:Ac("set_sprinting_1", true)
+            end
+            vu21().Running = false
+            if not vu102(p105) then
+                break
+            end
+        end
+    end
+    vu21().Running = false
+end
+function vu22.Drive(p128, pu129, pu130, p131, p132)
+    if not (pu129 and pu129.PrimaryPart) then
+        vu21().Running = false
+        return
+    end
+    vu21().StopWalking = false
+    local vu133 = vu5:CreatePath({
+        AgentRadius = vu21().VechineType == "car" and 6 or 3.5,
+        AgentHeight = 8,
+        AgentCanJump = true,
+        AgentMaxSlope = 50,
+        AgentCanClimb = false,
+        WaypointSpacing = 4,
+        Costs = {
+            BlockedNode = 100,
+            Cars = 1,
+            Water = math.huge,
+            DoorArea = 1
+        }
+    })
+    if not pcall(function()
+        vu133:ComputeAsync(pu129.PrimaryPart.Position, pu130)
+    end) or vu133.Status ~= Enum.PathStatus.Success then
+        vu21().Running = false
+        return
+    end
+    local v134 = vu133
+    local v135 = vu133.GetWaypoints(v134)
+    local v136, v137, v138 = pairs(v135)
+    while true do
+        local v139
+        v138, v139 = v136(v137, v138)
+        if v138 == nil then
+            break
+        end
+        if not (pu129 and pu129.PrimaryPart) then
+            vu21().Running = false
+            return
+        end
+        local v140 = pu129:GetPivot().Position
+        local v141 = v139.Action ~= Enum.PathWaypointAction.Jump and 4 or 12
+        local v142 = v139.Position + Vector3.new(0, v141, 0)
+        local v143 = (v142 - v140).Unit
+        local v144 = (v142 - v140).Magnitude
+        local v145 = vu21().InstantVechineSpeed or 55
+        local v146 = tick()
+        local v147 = 0
+        while v147 < v144 and vu102(p131) do
+            task.wait()
+            if not (pu129 and pu129.PrimaryPart) then
+                vu21().Running = false
+                return
+            end
+            vu21().Running = true
+            if not vu102(p131) then
+                vu21().Running = false
+                break
+            end
+            if p128:Detect() then
+                vu21().Running = false
+                return p128:Drive(pu129, pu130, p131, p132)
+            end
+            if not vu12.Sit then
+                vu21().Running = false
+                return p128:Drive(pu129, pu130, p131, p132)
+            end
+            if p128:CheckingIsMinigame() or p132 and p132:GetAttribute(tostring(vu21().keys[3])) or not vu102(p131) then
+                vu21().Running = false
+                break
+            end
+            local v148 = tick() - v146
+            v147 = math.min(v148 * v145, v144)
+            local v149 = v140 + v143 * v147
+            pu129:PivotTo((CFrame.lookAt(v149, v149 + v143)))
+            local v150, v151, v152 = ipairs(pu129:GetDescendants())
+            while true do
+                local v153
+                v152, v153 = v150(v151, v152)
+                if v152 == nil then
+                    break
+                end
+                if v153:IsA("BasePart") then
+                    v153.Velocity = Vector3.zero
+                    v153.RotVelocity = Vector3.zero
+                    v153.AssemblyLinearVelocity = Vector3.zero
+                    v153.AssemblyAngularVelocity = Vector3.zero
+                end
+            end
+        end
+        vu21().Running = false
+        if not vu102(p131) then
+            break
+        end
+    end
+    vu21().Running = false
+end
+function vu22.FindClosestAvailableATM(p154)
+    local v155 = math.huge
+    local v156, v157, v158 = ipairs(workspace.Map.Props.ATMs:GetChildren())
+    local v159 = nil
+    while true do
+        local v160
+        v158, v160 = v156(v157, v158)
+        if v158 == nil then
+            break
+        end
+        if v160.Name == "ATM" then
+            local v161, v162, v163 = pairs(v160:GetAttributes())
+            local v164 = {}
+            while true do
+                v163 = v161(v162, v163)
+                if v163 == nil then
+                    break
+                end
+                table.insert(v164, v163)
+            end
+            table.sort(v164)
+            if v164[3] and v160:GetAttribute(v164[3]) == false then
+                local v165 = p154:dist(v160.Area.CFrame)
+                if v165 < v155 then
+                    v159 = v160
+                    v155 = v165
+                end
+            end
+        end
+    end
+    return v159
+end
+function vu23.AutoFarmATM()
+    if vu22:GetLevel() < 10 then
+        repeat
+            task.wait(5)
+        until false
+        return
+    end
+    while true do
+        while true do
+            if not task.wait() then
+                return
+            end
+            if vu21().AutoFarmATM then
+                break
+            end
+            vu22:ForceStop()
+        end
+        local v166 = vu22:GetCarFromType(vu21().VechineType)
+        if v166 then
+            local v167 = vu22:GetInfo(v166)
+            if v167[2] and not (v167[4] or v167[5]) then
+                vu7.get("toggle_equip_item", tostring(v167[3]))
+            elseif v167[5] then
+                warn("Vehicle Broken - Walking to ATM to repair")
+                local v168 = vu22:FindClosestAvailableATM()
+                if v168 then
+                    if vu22:dist(v168.Area) > 12 then
+                        vu22:Teleport(v168.Area.Position, vu21().AutoFarmATM, v168)
+                        task.wait(0.2)
+                    end
+                    local v169 = 500
+                    if vu22:GetMoney() < v169 then
+                        local v170 = vu22
+                        local v171 = vu22
+                        local v172 = math.min(v169 - v170:GetMoney(), v171:ATMMoney())
+                        if v172 > 0 then
+                            vu22:Ac("transfer_funds", "bank", "hand", v172)
+                            task.wait(0.3)
+                        end
+                    end
+                    if v169 > vu22:GetMoney() then
+                        warn("Not enough money to repair vehicle")
+                        task.wait(3)
+                    else
+                        vu22:Ac("repair_vehicle")
+                        warn("Vehicle repaired successfully!")
+                        task.wait(1)
+                    end
+                else
+                    warn("No ATM available for repair")
+                    task.wait(3)
+                end
+            end
+            local v173, v174, v175 = ipairs(workspace.Vehicles:GetChildren())
+            local v176 = false
+            while true do
+                local v177
+                v175, v177 = v173(v174, v175)
+                if v175 == nil then
+                    break
+                end
+                if v177:GetAttribute("OwnerUserId") == vu15 and not (vu22:CheckingIsMinigame() or vu22:Detect()) then
+                    vu22:Ac("lock_vehicle", v177, true)
+                    v176 = true
+                    if v177.PrimaryPart then
+                        local v178 = v177.PrimaryPart.Position.Y
+                        if v178 < 100 then
+                            v177:PivotTo(CFrame.new(v177.PrimaryPart.Position.X, 260, v177.PrimaryPart.Position.Z))
+                            task.wait(0.1)
+                        end
+                        if v178 < 50 then
+                            v177:PivotTo(vu14.CFrame * CFrame.new(0, 10, 0))
+                            task.wait(0.1)
+                        end
+                    end
+                    if not vu12.Sit then
+                        local v179 = tick()
+                        if v179 - vu21().LastVehicleTeleport >= 0.5 then
+                            v177:PivotTo(vu14.CFrame * CFrame.new(0, 7, 0))
+                            vu21().LastVehicleTeleport = v179
+                            task.wait(0.1)
+                        end
+                        local v180, v181, v182 = pairs(v177.PrimaryPart:GetDescendants())
+                        while true do
+                            local v183
+                            v182, v183 = v180(v181, v182)
+                            if v182 == nil then
+                                break
+                            end
+                            if v183:IsA("ProximityPrompt") then
+                                fireproximityprompt(v183)
+                            end
+                        end
+                    end
+                    local v184 = 0
+                    while not vu12.Sit and (v184 < 5 and vu21().AutoFarmATM) do
+                        task.wait()
+                        v184 = v184 + 1
+                    end
+                    if not vu12.Sit then
+                        break
+                    end
+                    local v185 = vu22:GetChipFromType(vu21().SelectSwiperType)
+                    local v186 = vu22:GetChipPrice(v185) * vu21().SwiperLimit
+                    local v187 = vu22:GetInfo(v185)
+                    if v185 == "Level" then
+                        task.wait(1)
+                        break
+                    elseif v187[2] then
+                        if v187[1] > 0 then
+                            local v188 = vu22:FindClosestAvailableATM()
+                            if v188 then
+                                vu21().keys = {}
+                                local v189, v190, v191 = pairs(v188:GetAttributes())
+                                while true do
+                                    v191 = v189(v190, v191)
+                                    if v191 == nil then
+                                        break
+                                    end
+                                    table.insert(vu21().keys, v191)
+                                end
+                                table.sort(vu21().keys)
+                                if not v188:GetAttribute(vu21().keys[3]) then
+                                    if vu22:dist(v188.Area) <= 12 then
+                                        vu7.get("exit_seat")
+                                        task.wait(0)
+                                        vu14.CFrame = v188.Area.CFrame * CFrame.new(0, 0, 3)
+                                        task.wait(0)
+                                        vu14.Anchored = true
+                                        task.wait(0)
+                                        if vu21().EnabledDespoit and vu22:GetMoney() > 0 then
+                                            local v192 = vu22
+                                            vu7.get("transfer_funds", "hand", "bank", v192:GetMoney())
+                                            task.wait(1e-24)
+                                        end
+                                        if not vu22:CheckingIsMinigame() then
+                                            vu22:Ac("request_begin_hacking_3", v188, v185)
+                                            task.wait(1)
+                                        end
+                                        if vu22:CheckingIsMinigame() or v188:GetAttribute(vu21().keys[3]) == false then
+                                            vu22:Ac("atm_win_3", v188)
+                                            task.wait(1)
+                                        end
+                                        vu14.Anchored = false
+                                        task.wait(0.2)
+                                    else
+                                        vu22:Drive(v177, v188.Area.Position, vu21().AutoFarmATM, v188)
+                                        task.wait(0.2)
+                                    end
+                                end
+                            else
+                                task.wait(0.5)
+                            end
+                        end
+                        break
+                    elseif vu22:GetMoney() >= v186 then
+                        local v193, v194
+                        if v185 == "HackToolQuantum" then
+                            v193 = workspace:FindFirstChild("ShopZone_IllegalNightclub")
+                            if v193 then
+                                v194 = v193:IsA("BasePart") and v193.Position or v193:GetPivot().Position
+                            else
+                                v194 = Vector3.new(1167.5, 255.1586151123047, - 355.3337097167969)
+                            end
+                        else
+                            v193 = workspace:FindFirstChild("ShopZone_Illegal")
+                            if v193 then
+                                v194 = v193:IsA("BasePart") and v193.Position or v193:GetPivot().Position
+                            else
+                                v194 = Vector3.new(- 212.181717, 255.525162, 387.744324)
+                            end
+                        end
+                        local v195 = false
+                        while not v195 and vu21().AutoFarmATM do
+                            if vu22:dist(CFrame.new(v194)) <= 20 then
+                                v195 = true
+                            else
+                                vu22:Drive(v177, v194, vu21().AutoFarmATM)
+                                task.wait(1)
+                                if vu22:dist(CFrame.new(v194)) <= 20 then
+                                    v195 = true
+                                end
+                            end
+                        end
+                        if not (v195 and v193) then
+                            break
+                        end
+                        local v196 = 0
+                        local v197 = 10
+                        while v196 < v197 and vu21().AutoFarmATM do
+                            local v198 = vu22:GetInfo(v185)[1]
+                            local v199 = vu21().SwiperLimit - v198
+                            if v199 <= 0 then
+                                break
+                            end
+                            local v200 = vu22
+                            if vu22:GetMoney() < v200:GetChipPrice(v185) then
+                                break
+                            end
+                            for _ = 1, v199 do
+                                local v201 = vu22
+                                if vu22:GetMoney() < v201:GetChipPrice(v185) then
+                                    break
+                                end
+                                vu7.get("purchase_consumable", v193, v185)
+                                task.wait(0.3)
+                            end
+                            task.wait(0.5)
+                            if vu22:GetInfo(v185)[1] >= vu21().SwiperLimit then
+                                break
+                            end
+                            v196 = v196 + 1
+                        end
+                        task.wait(0.2)
+                        break
+                    else
+                        if v186 > vu22:ATMMoney() then
+                            task.wait(1)
+                        else
+                            local v202 = vu22:FindClosestAvailableATM()
+                            if v202 then
+                                if vu22:dist(v202.Area) <= 12 then
+                                    local v203 = vu22
+                                    local v204 = vu22
+                                    local v205 = math.min(v186 - v203:GetMoney(), v204:ATMMoney())
+                                    if v205 > 0 then
+                                        vu22:Ac("transfer_funds", "bank", "hand", v205)
+                                        task.wait(0.3)
+                                    end
+                                    task.wait(0.2)
+                                else
+                                    vu22:Drive(v177, v202.Area.Position, vu21().AutoFarmATM, v202)
+                                    task.wait(0.2)
+                                end
+                            end
+                        end
+                        break
+                    end
+                end
+            end
+            if not v176 then
+                task.wait(0.3)
+            end
+        else
+            task.wait(0.5)
+        end
+    end
+end
+local v206 = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))():CreateWindow({
+    Icon = "",
+    Title = "Mystic Hub Premium​ | Farm [Blockspin]​",
+    Icon = "moniter",
+    Author = "by นายห้างหมักเสี่ยว",
+    Folder = "mystic",
+    Size = UDim2.fromOffset(400, 400),
+    MinSize = Vector2.new(560, 350),
+    MaxSize = Vector2.new(850, 560),
+    Transparent = true,
+    Theme = "Dark",
+    Resizable = true,
+    SideBarWidth = 200,
+    BackgroundImageTransparency = 0.42,
+    HideSearchBar = false,
+    ScrollBarEnabled = false,
+    OpenButton = {
+        Title = "open",
+        Icon = "https://cdn.discordapp.com/attachments/1379297032568569909/1436623861826457600/93_20251108144920-removebg-preview.png?ex=691047bb&is=690ef63b&hm=0eb04f3e5adc7857237b8f13ed6a4d86864f42aec99e055cc9289ce22a04aed2&",
+        CornerRadius = UDim.new(1, 0),
+        StrokeThickness = 3,
+        Enabled = true,
+        Draggable = true,
+        OnlyMobile = false
+    }
+})
+v206:Tag({
+    Title = "ATM",
+    Color = Color3.fromHex("#30ff6a"),
+    Radius = 13
+})
+local v207 = v206:Tab({
+    Title = "ฟาร์ม",
+    Icon = "car"
+})
+v207:Section({
+    Title = "Information:"
+})
+local vu208 = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+local vu209 = v207:Button({
+    Title = "Bank Balance",
+    Desc = "N/A"
+})
+local vu210 = v207:Button({
+    Title = "Hand Balance",
+    Desc = "N/A"
+})
+local function vu211()
+    return tonumber(vu208.TopRightHud.Holder.Frame.MoneyTextLabel.Text:match("%$(%d+)"))
+end
+local function vu217()
+    local v212 = vu208
+    local v213, v214, v215 = ipairs(v212:GetDescendants())
+    while true do
+        local v216
+        v215, v216 = v213(v214, v215)
+        if v215 == nil then
+            break
+        end
+        if v216:IsA("TextLabel") and string.find(v216.Text, "เงินในธนาคาร") then
+            return tonumber(v216.Text:match("%$(%d+)"))
+        end
+    end
+    return 0
+end
+task.spawn(function()
+    while task.wait(0.2) do
+        vu209:SetDesc("<b><font color=\"#FFFFFF\">$" .. (vu217() or 0) .. "</font></b>")
+        vu210:SetDesc("<b><font color=\"#FFFFFF\">$" .. (vu211() or 0) .. "</font></b>")
+    end
+end)
+local vu218 = v207:Button({
+    Title = "Player Level",
+    Desc = "Loading..."
+})
+task.spawn(function()
+    while task.wait(1) do
+        local v219 = vu22:GetLevel()
+        if v219 < 10 then
+            vu218:SetDesc("<b><font color=\"#FFFFFF\">Lv. " .. v219 .. " (Need level 10+)</font></b>")
+        else
+            vu218:SetDesc("<b><font color=\"#FFFFFF\">Lv. " .. v219 .. "</font></b>")
+        end
+    end
+end)
+local vu220 = v207:Button({
+    Title = "Quantum Tool",
+    Desc = "Loading..."
+})
+task.spawn(function()
+    while task.wait(1) do
+        local v221 = vu22:GetStock()
+        if v221 == "N/A" then
+            vu220:SetDesc("<b><font color=\"#FFFFFF\">The shop not open right now.</font></b>")
+        else
+            vu220:SetDesc("<b><font color=\"#FFFFFF\">" .. v221 .. "</font></b>")
+        end
+    end
+end)
+task.spawn(function()
+    while task.wait(1) do
+        local v222 = vu22:GetLevel()
+        if v222 < 10 then
+            vu218:SetDesc("<b><font color=\"#FFFFFF\">Lv. " .. v222 .. " (Need level 10+)</font></b>")
+        else
+            vu218:SetDesc("<b><font color=\"#FFFFFF\">Lv. " .. v222 .. "</font></b>")
+        end
+    end
+end)
+v207:Section({
+    Title = "Job:"
+})
+v207:Toggle({
+    Title = "เปิดฟาร์ม",
+    Icon = "check",
+    Type = "Checkbox",
+    Value = false,
+    Callback = function(p223)
+        vu19.AutoFarmATM = p223
+        vu19.EnabledVechine = p223
+        vu19.EnabledDespoit = p223
+    end
+})
+v207:Section({
+    Title = "Setting:"
+})
+v207:Dropdown({
+    Title = "เลือกชิป แนะนำเป็น Smart Select​",
+    Values = {
+        "Smart Select",
+        "HackToolBasic",
+        "HackToolPro",
+        "HackToolUltimate",
+        "HackToolQuantum"
+    },
+    Value = "Smart Select",
+    Callback = function(p224)
+        vu19.SelectSwiperType = p224
+    end
+})
+v207:Dropdown({
+    Title = "Vehicle Type",
+    Values = {
+        "Bike",
+        "Car"
+    },
+    Value = "Bike",
+    Callback = function(p225)
+        vu19.VechineType = p225
+    end
+})
+v207:Slider({
+    Title = "อยากให้มันซื้อชิปเท่าไหร่",
+    Step = 1,
+    Value = {
+        Min = 1,
+        Max = 10,
+        Default = 3
+    },
+    Callback = function(p226)
+        vu19.SwiperLimit = p226
+    end
+})
+v207:Slider({
+    Title = "เดินไว",
+    Step = 1,
+    Value = {
+        Min = 10,
+        Max = 35,
+        Default = 30
+    },
+    Callback = function(p227)
+        vu19.InstantTeleportSpeed = p227
+    end
+})
+v207:Slider({
+    Title = "ความเร็วรถ",
+    Step = 1,
+    Value = {
+        Min = 10,
+        Max = 350,
+        Default = 60
+    },
+    Callback = function(p228)
+        vu19.InstantVechineSpeed = p228
+    end
+})
+task.spawn(vu23.AutoFarmATM)
+local v229 = v206:Tab({
+    Title = "Character",
+    Icon = "person-standing"
+})
+v229:Toggle({
+    Title = "ออโต้ใส่ผ้าคุม",
+    Desc = "",
+    Icon = "check",
+    Type = "Checkbox",
+    Callback = function(p230)
+        if p230 then
+            local v231 = game:GetService("ReplicatedStorage")
+            local vu232 = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+            local vu233 = require(v231.Modules.Core.Net)
+            function GetAllInfos(p234)
+                local v235 = vu232.Items:FindFirstChild("ItemsHolder").ItemsScrollingFrame
+                local v236, v237, v238 = ipairs(v235:GetChildren())
+                local v239 = {}
+                while true do
+                    local v240
+                    v238, v240 = v236(v237, v238)
+                    if v238 == nil then
+                        break
+                    end
+                    if v240.Name ~= "Folder" and (v240.Name ~= "UIGridLayout" and (v240.Name ~= "ItemTemplate" and v240.ItemName.Text == p234)) then
+                        table.insert(v239, {
+                            Uid = v240.Name,
+                            Using = v240:FindFirstChild("ItemEquipped").Visible,
+                            Drowning = v240:FindFirstChild("DestroyedItemIcon").Visible
+                        })
+                    end
+                end
+                return v239
+            end
+            function EquipAccessory(p241)
+                local v242 = GetAllInfos(p241)
+                local v243, v244, v245 = ipairs(v242)
+                while true do
+                    local v246
+                    v245, v246 = v243(v244, v245)
+                    if v245 == nil then
+                        break
+                    end
+                    if not (v246.Using or v246.Drowning) then
+                        vu233.get("toggle_equip_item", v246.Uid)
+                        repeat
+                            task.wait()
+                        until GetAllInfos(p241)[1].Using
+                    end
+                end
+            end
+            EquipAccessory("Shiesty")
+        end
+    end
+})
+function vu23.AntiDied()
+    while task.wait(0.25) do
+        local vu247 = false
+        local function v248()
+            vu247 = true
+        end
+        if not vu21().AntiDied then
+            v248()
+        end
+        if vu12 and vu12.Health > 0 then
+            if vu12:GetAttribute("HasBeenDowned") then
+                if vu12:GetAttribute("IsDead") or vu12.Health <= 0 then
+                    vu20 = false
+                else
+                    local v249 = vu208:FindFirstChild("DeathScreen")
+                    if v249 then
+                        local v250 = v249:FindFirstChild("DeathScreenHolder")
+                        if v250 and not v250.Visible then
+                            local v251 = math.random(1, 100) <= 80 and math.random(- 30, - 1) or math.random(5, 55)
+                            local v252 = math.random(- 5, 5)
+                            vu14.Anchored = false
+                            vu14.CanCollide = false
+                            vu14.CFrame = vu14.CFrame * CFrame.new(v252, v251, v252)
+                            local v253 = vu9
+                            local v254, v255, v256 = pairs(v253:GetChildren())
+                            while true do
+                                local v257
+                                v256, v257 = v254(v255, v256)
+                                if v256 == nil then
+                                    break
+                                end
+                                if v257:IsA("BasePart") then
+                                    v257.CanCollide = false
+                                    v257.Anchored = false
+                                    v257.CFrame = v257.CFrame * CFrame.new(v252, v251, v252)
+                                end
+                            end
+                            vu20 = true
+                        end
+                    end
+                end
+            elseif vu20 and not vu12:GetAttribute("IsInCombat") then
+                vu20 = false
+            end
+        end
+        if vu247 then
+            break
+        end
+    end
+end
+v229:Toggle({
+    Title = "Anti Kill",
+    Desc = "Normal PLayer cant Finish",
+    Icon = "check",
+    Type = "Checkbox",
+    Value = true,
+    Callback = function(p258)
+        vu21().AntiDied = p258
+        if p258 then
+            task.spawn(vu23.AntiDied)
+        end
+    end
+})
+local v293 = v206:Tab({
+    Title = "เซิฟเวอร์",
+    Icon = "server"
+})
+v293:Section({
+    Title = "Server Information:"
+})
+v293:Code({
+    Title = "Current Server",
+    Code = "" .. (function()
+        return game.JobId or "Unknown"
+    end)()
+})
+v293:Divider()
+v293:Section({
+    Title = "Server Utilities:"
+})
+local vu294 = ""
+v293:Input({
+    Title = "ใส่เลขเซิฟ",
+    Placeholder = "Paste server JobId here...",
+    Callback = function(p295)
+        vu294 = p295
+    end
+})
+v293:Button({
+    Title = "Join by Code",
+    Icon = "log-in",
+    Callback = function()
+        if vu294 ~= "" then
+            game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, vu294, game.Players.LocalPlayer)
+        else
+            warn("\239\191\189\239\191\189\224\184\170\224\185\136code\224\184\148\224\184\180\224\184\153\224\185\137\224\184\173\224\184\135")
+        end
+    end
+})
+v293:Button({
+    Title = "รีจอย-เข้าเซิฟเดิม",
+    Icon = "refresh-ccw",
+    Callback = function()
+        game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId, game.Players.LocalPlayer)
+    end
+})
+v293:Button({
+    Title = "สุ่มเซิฟ",
+    Icon = "",
+    Callback = function()
+        local v296 = game:GetService("HttpService")
+        local v297 = game:GetService("TeleportService")
+        local v298 = {}
+        local v299 = v296:JSONDecode((game:HttpGet(string.format("https://games.roblox.com/v1/games/%d/servers/Public?sortOrder=Asc&limit=100", game.PlaceId))))
+        if v299 and v299.data then
+            local v300, v301, v302 = pairs(v299.data)
+            while true do
+                local v303
+                v302, v303 = v300(v301, v302)
+                if v302 == nil then
+                    break
+                end
+                if v303.playing < v303.maxPlayers then
+                    table.insert(v298, v303.id)
+                end
+            end
+        end
+        if # v298 > 0 then
+            v297:TeleportToPlaceInstance(game.PlaceId, v298[math.random(1, # v298)], game.Players.LocalPlayer)
+        end
+    end
+})
+return
