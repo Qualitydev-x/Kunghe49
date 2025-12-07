@@ -799,8 +799,8 @@ local v206 = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/relea
     Author = "by นายห้างหมักเสี่ยว",
     Folder = "mystic",
     Size = UDim2.fromOffset(400, 400),
-    MinSize = Vector2.new(560, 350),
-    MaxSize = Vector2.new(850, 560),
+    MinSize = Vector2.new(400, 400),
+    MaxSize = Vector2.new(400, 400),
     Transparent = true,
     Theme = "Dark",
     Resizable = true,
@@ -817,11 +817,6 @@ local v206 = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/relea
         Draggable = true,
         OnlyMobile = false
     }
-})
-v206:Tag({
-    Title = "ATM",
-    Color = Color3.fromHex("#FFFFFF"),
-    Radius = 13
 })
 local v207 = v206:Tab({
     Title = "ฟาร์ม",
